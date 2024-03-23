@@ -52,6 +52,9 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                       hintText: 'Email',
                     ),
                     validator: FromValidator.emailValidetor,
+                    onChanged: (v){
+
+                    },
                   ),
                   const SizedBox(height: 16.0),
                   SizedBox(

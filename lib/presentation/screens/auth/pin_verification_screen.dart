@@ -1,3 +1,4 @@
+import 'package:assingment_task_menager/data/services/network_caller.dart';
 import 'package:assingment_task_menager/data/utility/urls.dart';
 import 'package:assingment_task_menager/presentation/screens/auth/set_password_screen.dart';
 import 'package:assingment_task_menager/presentation/screens/auth/sing_in_screen.dart';
@@ -12,7 +13,6 @@ class PinVerificationScreen extends StatefulWidget {
   const PinVerificationScreen({super.key, required this.email});
 
   final String email;
-
 
   @override
   State<PinVerificationScreen> createState() => _PinVerificationScreenState();
@@ -50,6 +50,7 @@ class _PinVerificationScreenState extends State<PinVerificationScreen> {
                     height: 24.0,
                   ),
                   PinCodeTextField(
+                    controller: _PinTEController,
                     keyboardType: TextInputType.number,
                     appContext: context,
                     length: 6,
@@ -78,7 +79,7 @@ class _PinVerificationScreenState extends State<PinVerificationScreen> {
                           )
                         : ElevatedButton(
                             onPressed: () {
-                            _pintVarification();
+                              _pintVarification();
                             },
                             child: const Text("Verify")),
                   ),
@@ -115,36 +116,37 @@ class _PinVerificationScreenState extends State<PinVerificationScreen> {
     );
   }
 
-  @override
-  void dispose() {
-    _PinTEController.dispose();
-    super.dispose();
-  }
-  Future<void>  _pintVarification() async {
+  Future<void> _pintVarification() async {
     setState(() {
       _pinVerificationInProgress = true;
     });
-    http.Response response = await http.get(Uri.parse(Urls.RecoverVerifyOTP(
-      widget.email,
-      _PinTEController.text,
-    )));
+    final response = await NetworkCaller.getRequest(
+        Urls.RecoverVerifyOTP(widget.email, _PinTEController.text));
+
     _pinVerificationInProgress = false;
-    print(response.body);
     setState(() {});
-    if (response.statusCode==200) {
+    print(response.responseBody);
+
+    if (response.responseBody['status'] == "success") {
       if (mounted) {
         Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) =>  SetPasswordScreen(email:widget.email, otp: _PinTEController.text),
-            ),
+          context,
+          MaterialPageRoute(
+            builder: (context) => SetPasswordScreen(
+                email: widget.email, otp: _PinTEController.text),
+          ),
         );
-
       }
     } else {
       if (mounted) {
         showSnackBarMessage(context, "wrong OTP");
       }
     }
+  }
+
+  @override
+  void dispose() {
+    _PinTEController.dispose();
+    super.dispose();
   }
 }

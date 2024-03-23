@@ -132,7 +132,7 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
     } else {
       setState(() {});
       if (mounted) {
-        showSnackBarMessage(context, "Invalid password");
+        showSnackBarMessage(context, "Invalid password", true);
       }
     }
   }

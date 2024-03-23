@@ -51,8 +51,8 @@ class NetworkCaller {
     }
   }
 
-  static Future<ResponseObject> postRequest(
-      String url, Map<String, dynamic> body,{bool fromSingIn = false}) async {
+  static Future<ResponseObject> postRequest(String url,
+      Map<String, dynamic> body, {bool fromSingIn = false}) async {
     try {
       log(url);
       log(body.toString());
