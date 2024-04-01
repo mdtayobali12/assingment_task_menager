@@ -1,10 +1,10 @@
-import 'package:assingment_task_menager/data/models/response_object.dart';
+import 'package:assingment_task_menager/presentation/controllers/sinup_controller.dart';
 import 'package:assingment_task_menager/presentation/widgets/form_validetor.dart';
-import 'package:assingment_task_menager/data/services/network_caller.dart';
-import 'package:assingment_task_menager/data/utility/urls.dart';
 import 'package:assingment_task_menager/presentation/widgets/background_widget.dart';
 import 'package:assingment_task_menager/presentation/widgets/snack_message.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 
 class SingUpScreen extends StatefulWidget {
   const SingUpScreen({super.key});
@@ -20,8 +20,8 @@ class _SingUpScreenState extends State<SingUpScreen> {
   final TextEditingController _MobileTEController = TextEditingController();
   final TextEditingController _PasswordTEController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final SingUpController _singUpController = Get.find<SingUpController>();
 
-  bool _isRegistrationInProgress = false;
 
   @override
   Widget build(BuildContext context) {
@@ -84,16 +84,26 @@ class _SingUpScreenState extends State<SingUpScreen> {
                       decoration: const InputDecoration(hintText: 'password'),
                       validator: FromValidator.passwordValidetor),
                   const SizedBox(height: 16.0),
-                  SizedBox(
-                    width: double.infinity,
-                    child:_isRegistrationInProgress?const Center(child: CircularProgressIndicator()): ElevatedButton(
-                      onPressed: () {
-                        singUp();
-                      },
-                      child: const Icon(
-                        Icons.arrow_circle_right_outlined,
-                      ),
-                    ),
+                  GetBuilder<SingUpController>(
+                    builder: (singUpController) {
+                      return SizedBox(
+                        width: double.infinity,
+                        child: singUpController.inProgress
+                            ? const Center(
+                                child: CircularProgressIndicator(),
+                              )
+                            : ElevatedButton(
+                                onPressed: () {
+                                  if(_formKey.currentState!.validate()){
+                                  _signUp();
+                                  }
+                                },
+                                child: const Icon(
+                                  Icons.arrow_circle_right_outlined,
+                                ),
+                              ),
+                      );
+                    }
                   ),
                   const SizedBox(
                     height: 32.0,
@@ -124,46 +134,35 @@ class _SingUpScreenState extends State<SingUpScreen> {
       ),
     );
   }
-      Future<void> singUp()async {
-        if (_formKey.currentState!.validate()) {
-          _isRegistrationInProgress = true;
-          setState(() {});
+  Future<void> _signUp() async{
+    final result = await _singUpController.singUp(
+        _EmailTEController.text.trim(),
+        _FirstNameTEController.text.trim(),
+        _LastNameTEController.text.trim(),
+        _MobileTEController.text.trim(),
+        _PasswordTEController.text);
 
-          Map<String, dynamic> inputParams = {
-            "email": _EmailTEController.text.trim(),
-            "firstName": _FirstNameTEController.text.trim(),
-            "lastName": _LastNameTEController.text.trim(),
-            "mobile": _MobileTEController.text.trim(),
-            "password": _PasswordTEController.text
-          };
-          final ResponseObject response =
-          await NetworkCaller.postRequest(
-              Urls.registration, inputParams);
-          _isRegistrationInProgress = false;
-          setState(() {});
-
-          if (response.isSuccess) {
-            if (mounted) {
-              showSnackBarMessage(context,
-                  'Registration Completed! please login.');
-              Navigator.pop(context);
-            }
-          } else {
-            if (mounted) {
-              showSnackBarMessage(context,
-                  'Registration Failed . Try again', true);
-            }
-          }
-        }
-
+    if (result) {
+      if (mounted) {
+        showSnackBarMessage(context,
+            _singUpController.errorMessageSuccess);
+        Navigator.pop(context);
       }
+    } else {
+      if (mounted) {
+        showSnackBarMessage(context,
+           _singUpController.errorMessage );
+      }
+    }
+  }
+
   @override
   void dispose() {
-    _EmailTEController.dispose();
-    _PasswordTEController.dispose();
-    _LastNameTEController.dispose();
-    _FirstNameTEController.dispose();
-    _EmailTEController.dispose();
+   _EmailTEController.dispose();
+   _FirstNameTEController.dispose();
+   _LastNameTEController.dispose();
+   _MobileTEController.dispose();
+   _PasswordTEController.dispose();
     super.dispose();
   }
 }

@@ -1,13 +1,18 @@
 import 'package:assingment_task_menager/data/services/network_caller.dart';
 import 'package:assingment_task_menager/data/utility/urls.dart';
-import 'package:assingment_task_menager/presentation/screens/main_bottom_nav_screen.dart';
 import 'package:assingment_task_menager/presentation/screens/auth/sing_in_screen.dart';
 import 'package:assingment_task_menager/presentation/widgets/background_widget.dart';
+import 'package:assingment_task_menager/presentation/widgets/form_validetor.dart';
 import 'package:assingment_task_menager/presentation/widgets/snack_message.dart';
 import 'package:flutter/material.dart';
 
 class SetPasswordScreen extends StatefulWidget {
-  const SetPasswordScreen({super.key, required this.email, required this.otp});
+  const SetPasswordScreen({
+    super.key,
+    required this.email,
+    required this.otp,
+  });
+
   final String email;
   final String otp;
 
@@ -54,6 +59,7 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
                     decoration: const InputDecoration(
                       hintText: 'Password',
                     ),
+                    validator: FromValidator.emailValidetor,
                   ),
                   const SizedBox(
                     height: 8.0,
@@ -63,15 +69,28 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
                     decoration: const InputDecoration(
                       hintText: 'Confirm Password',
                     ),
+                    validator: (value){
+                      if(value!.isEmpty){
+                        return "Enter Confirm password";
+                      }
+                      return null;
+                    },
                   ),
                   const SizedBox(height: 16.0),
                   SizedBox(
                     width: double.infinity,
-                    child:_setpasswordInprogress?const Center(child: CircularProgressIndicator(),): ElevatedButton(
-                        onPressed: () {
-                          setPasswordApi();
-                        },
-                        child: const Text('Confirm')),
+                    child: _setpasswordInprogress
+                        ? const Center(
+                            child: CircularProgressIndicator(),
+                          )
+                        : ElevatedButton(
+                            onPressed: () {
+                              if(_formkey.currentState!.validate()){
+                                setPasswordApi();
+                              }
+
+                            },
+                            child: const Text('Confirm')),
                   ),
                   const SizedBox(height: 32.0),
                   Row(
@@ -105,8 +124,9 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
       ),
     );
   }
+
   Future<void> setPasswordApi() async {
-    _setpasswordInprogress  = true;
+    _setpasswordInprogress = true;
     setState(() {});
     Map<String, dynamic> inputparams = {
       "email": widget.email,
@@ -114,21 +134,19 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
       "password": _PasswordTEController.text
     };
     final respons =
-    await NetworkCaller.postRequest(Urls.RecoverResetPass, inputparams);
+        await NetworkCaller.postRequest(Urls.RecoverResetPass, inputparams);
     _setpasswordInprogress = false;
     if (respons.isSuccess) {
-      setState(() {
-
-      });
-      if(!mounted){
+      setState(() {});
+      if (!mounted) {
         return;
       }
       Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
-            builder: (context) => SingInScreen(),
+            builder: (context) => const SingInScreen(),
           ),
-              (route) => false);
+          (route) => false);
     } else {
       setState(() {});
       if (mounted) {
@@ -136,11 +154,11 @@ class _SetPasswordScreenState extends State<SetPasswordScreen> {
       }
     }
   }
+
   @override
   void dispose() {
     _PasswordTEController.dispose();
     _ConfirmPasswordTEController.dispose();
     super.dispose();
   }
-
 }

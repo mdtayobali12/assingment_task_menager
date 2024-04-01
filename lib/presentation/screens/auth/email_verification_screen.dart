@@ -52,9 +52,6 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                       hintText: 'Email',
                     ),
                     validator: FromValidator.emailValidetor,
-                    onChanged: (v){
-
-                    },
                   ),
                   const SizedBox(height: 16.0),
                   SizedBox(
@@ -125,11 +122,10 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
              ),
            );
          }
-
        }else{
          if (mounted) {
            showSnackBarMessage(context,
-               'your has been invalid');
+               'your habeen invalid');
          }
        }
   }
